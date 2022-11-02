@@ -1,12 +1,17 @@
 #include "Player.h"
 #include <iostream>
-bool isDead = false;
-
 bool SpinDash = false;
 bool Rolling = false;
-bool Boost = false;
-bool Print = true;
 float RollingTime = 0.0f;
+float SlidingSpeed = 0.0f;
+float SlidingTime = 0.0f;
+bool Sliding = false;
+bool Ducking = false;
+float const cSonic_spindashSpeed = 30.0f;
+float const cSonic_slidingSpeedMin = 10.0f;
+float const cSonic_slidingSpeedMax = 70.0f;
+float const cSonic_spindashTime = 3.0f;
+float const cSonic_slidingTime = 3.0f;
 
 
 
@@ -49,46 +54,39 @@ HOOK(void, __fastcall, CPlayerSpeedUpdateParallel, 0xE6BF20, Sonic::Player::CPla
     Sonic::SPadState input = Sonic::CInputState::GetInstance()->GetPadState();
     Hedgehog::Math::CVector velNoY = sonic->m_Velocity;
     velNoY.y() = 0;
-	printf("%s\n", anim);
-	printf("%s\n", state);
+	//printf("%s\n", anim);
+	//printf("%s\n", state);
+}
 
 
-   
-    if (input.IsDown(Sonic::eKeyState_Y)) {
-		printf("Charging");
-		sonic->ChangeState("Squat");
-		sonic->ChangeAnimation("SpinAttack");
+//When Sliding
+HOOK(void, __fastcall, Sonic_SlideStarts, 0x11D7110, hh::fnd::CStateMachineBase::CStateBase* This) {
+	auto sonic = (Sonic::Player::CPlayerSpeedContext*)This->m_pContext;
+	auto player = sonic->m_pPlayer;
+	if (SpinDash) {
+		printf("SpinDash Mode");
 
-		if (input.IsReleased(Sonic::eKeyState_Y)) {
-			printf("WIP");
-		}
 	}
+	else {
+		printf("Sliding Mode");
+		WRITE_MEMORY(0x1230A85, uint32_t, 0x15F84F4); // slide begin animation
+		WRITE_MEMORY(0x1230A9F, uint32_t, 0x15F84F4); // slide begin animation
+		WRITE_MEMORY(0x1230D74, uint32_t, 0x15F84F4); // slide hold animation
+		
+		//Replaces slide Animation with rolling animation
+		WRITE_MEMORY(0x11D7124, uint32_t, 0x15F84F4);
+		WRITE_MEMORY(0x11D6E6A, uint32_t, 0x15F84F4);
+		WRITE_MEMORY(0x11D6EDB, uint32_t, 0x15F84F4);
 
-    
+		// Spindashing after being in the squat state
+		WRITE_MEMORY(0x1230C3A, uint32_t, 0x15F5108); //Switches the state to sliding
+		sonic->m_Velocity.x() += cSonic_slidingSpeedMax;
+		//sonic->m_Velocity.y() += cSonic_slidingSpeedMax;
+		//sonic->m_Velocity.z() += cSonic_slidingSpeedMax;
+		return originalSonic_SlideStarts(This);
 
-    if (state == "Squat") {
-        if (input.IsDown(Sonic::eKeyState_B)) {
-			printf("Ducking");
-			if (input.IsDown(Sonic::eKeyState_A)) {
-				printf("Spin Mode");
-				sonic->ChangeAnimation("SpinAttack");
-			}
-
-        }
-    }
-
+	}
 }
-
-
-void SpinDashing(Sonic::Player::CPlayerSpeedContext* context, const hh::fnd::SUpdateInfo& updateInfo) {
-    auto currentAnim = context->GetCurrentAnimationName().c_str();
-    auto input = Sonic::CInputState::GetInstance()->GetPadState();
-
-
-
-
-}
-
 
 
 
@@ -96,10 +94,11 @@ void Player::Install()
 
 {
 	CreateConsole();
-    printf("Hi");
-  
+    printf("Spindash for Modren Sonic");  
 	INSTALL_HOOK(CPlayerSpeedUpdateParallel);
+	INSTALL_HOOK(Sonic_SlideStarts);
     
    
 
 }
+

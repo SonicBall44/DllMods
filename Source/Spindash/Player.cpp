@@ -80,7 +80,7 @@ HOOK(void, __fastcall, Sonic_SlideStarts, 0x11D7110, hh::fnd::CStateMachineBase:
 
 		// Spindashing after being in the squat state
 		WRITE_MEMORY(0x1230C3A, uint32_t, 0x15F5108); //Switches the state to sliding
-		sonic->m_Velocity.x() += cSonic_slidingSpeedMax;
+		sonic->m_Velocity.x() = cSonic_slidingSpeedMax;
 		//sonic->m_Velocity.y() += cSonic_slidingSpeedMax;
 		//sonic->m_Velocity.z() += cSonic_slidingSpeedMax;
 		return originalSonic_SlideStarts(This);

@@ -16,18 +16,38 @@ HOOK(void, __fastcall, CPlayerSpeedUpdateParallel, 0xE6BF20, Sonic::Player::CPla
     Hedgehog::Base::CSharedString anim = sonic->GetCurrentAnimationName();
     Sonic::SPadState input = Sonic::CInputState::GetInstance()->GetPadState();
 	
+    if (sonic->m_ChaosEnergy != 100) {
+        if (state != "NormalDamageDead") {
+            Dead = true;
+            if (sonic->m_Grounded) {
+                sonic->ChangeState("NormalDamageDead");
+                (state != "NormalDamageDead");
+            }
+            else {
+                sonic->ChangeState("NormalDamageDeadAir");
+                (state != "NormalDamageDeadAir");
+            }
+            
 
+
+        }
+        else {
+            
+            sonic->m_ChaosEnergy = 100;
+            
+            Dead = false;
+        }
+
+  
+
+
+    }
+}
 
 	
 
 
 
-
-	if (input.IsDown(Sonic::eKeyState_X)) {
-		sonic->ChangeState("NormalDamageDeadAir");
-	}
-		
-}
 
 
 

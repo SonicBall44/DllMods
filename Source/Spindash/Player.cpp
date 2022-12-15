@@ -63,6 +63,13 @@ HOOK(void, __fastcall, CPlayerSpeedUpdateParallel, 0xE6BF20, Sonic::Player::CPla
 HOOK(void, __fastcall, Sonic_SlideStarts, 0x11D7110, hh::fnd::CStateMachineBase::CStateBase* This) {
 	auto sonic = (Sonic::Player::CPlayerSpeedContext*)This->m_pContext;
 	auto player = sonic->m_pPlayer;
+	Hedgehog::Math::CQuaternion rot = sonic->m_spMatrixNode->m_Transform.m_Rotation;
+	Eigen::Vector3f playerPosition;
+	Eigen::Quaternionf playerRotation = rot;
+	Eigen::Vector3f playerDir = playerRotation * Eigen::Vector3f::UnitZ();
+	Eigen::Vector3f spinVel = playerDir * cSonic_spindashSpeed;
+	
+	spinVel.y() = sonic->m_Velocity.y();
 	if (SpinDash) {
 		printf("SpinDash Mode");
 
@@ -80,7 +87,8 @@ HOOK(void, __fastcall, Sonic_SlideStarts, 0x11D7110, hh::fnd::CStateMachineBase:
 
 		// Spindashing after being in the squat state
 		WRITE_MEMORY(0x1230C3A, uint32_t, 0x15F5108); //Switches the state to sliding
-		sonic->m_Velocity.x() = cSonic_slidingSpeedMax;
+		sonic->m_Velocity = spinVel;
+		//sonic->m_Velocity.x() = cSonic_slidingSpeedMax;
 		//sonic->m_Velocity.y() += cSonic_slidingSpeedMax;
 		//sonic->m_Velocity.z() += cSonic_slidingSpeedMax;
 		return originalSonic_SlideStarts(This);

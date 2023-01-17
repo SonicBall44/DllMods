@@ -59,41 +59,96 @@ HOOK(void, __fastcall, CPlayerSpeedUpdateParallel, 0xE6BF20, Sonic::Player::CPla
 }
 
 
-//When Sliding
+//Spindashing State
 HOOK(void, __fastcall, Sonic_SlideStarts, 0x11D7110, hh::fnd::CStateMachineBase::CStateBase* This) {
 	auto sonic = (Sonic::Player::CPlayerSpeedContext*)This->m_pContext;
+	void* middlematrixNode = (void*)((uint32_t)sonic + 0x30);
 	auto player = sonic->m_pPlayer;
+	
 	Hedgehog::Math::CQuaternion rot = sonic->m_spMatrixNode->m_Transform.m_Rotation;
 	Eigen::Vector3f playerPosition;
 	Eigen::Quaternionf playerRotation = rot;
 	Eigen::Vector3f playerDir = playerRotation * Eigen::Vector3f::UnitZ();
 	Eigen::Vector3f spinVel = playerDir * cSonic_spindashSpeed;
+	SharedPtrTypeless ChargePart;
 	
-	spinVel.y() = sonic->m_Velocity.y();
-	if (SpinDash) {
-		printf("SpinDash Mode");
+	Hedgehog::Base::CSharedString Ch[] = {"Squat"};
 
-	}
-	else {
-		printf("Sliding Mode");
-		WRITE_MEMORY(0x1230A85, uint32_t, 0x15F84F4); // slide begin animation
-		WRITE_MEMORY(0x1230A9F, uint32_t, 0x15F84F4); // slide begin animation
-		WRITE_MEMORY(0x1230D74, uint32_t, 0x15F84F4); // slide hold animation
-		
+	spinVel.y() = sonic->m_Velocity.y();
 		//Replaces slide Animation with rolling animation
+		WRITE_MEMORY(0x1230C3A, uint32_t, 0x15F5108);
 		WRITE_MEMORY(0x11D7124, uint32_t, 0x15F84F4);
 		WRITE_MEMORY(0x11D6E6A, uint32_t, 0x15F84F4);
 		WRITE_MEMORY(0x11D6EDB, uint32_t, 0x15F84F4);
 
+	
+		Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ef_ch_sng_yh1_spinattack", 1);
+		sonic->PlaySound(2002043, true);
+		//WRITE_MEMORY(0x11D943D, uint8_t, 0x74); //Unlock direction while charging
+
+
+
 		// Spindashing after being in the squat state
-		WRITE_MEMORY(0x1230C3A, uint32_t, 0x15F5108); //Switches the state to sliding
+		 //Switches the state to sliding
+		//sonic->m_Velocity.x() = cSonic_spindashSpeed * playerDir;
+
 		sonic->m_Velocity = spinVel;
-		//sonic->m_Velocity.x() = cSonic_slidingSpeedMax;
-		//sonic->m_Velocity.y() += cSonic_slidingSpeedMax;
-		//sonic->m_Velocity.z() += cSonic_slidingSpeedMax;
+		//sonic->m_Velocity.z() = cSonic_slidingSpeedZ;
+		WRITE_MEMORY(0x11D722C, int, -1); // Removes sliding sfx
+		//sonic->m_HorizontalVelocity.x() = cSonic_spindashSpeed;
+		
+		//sonic->m_Velocity.y() = cSonic_slidingSpeedMax;
+		
 		return originalSonic_SlideStarts(This);
 
+
+
 	}
+
+
+//Charging state
+
+HOOK(void, __fastcall, Sonic_ChargeStart, 0x1230A30, hh::fnd::CStateMachineBase::CStateBase* This) {
+	auto sonic = (Sonic::Player::CPlayerSpeedContext*)This->m_pContext;
+	//printf("In ChargeStart");
+	auto player = sonic->m_pPlayer;
+	auto input = Sonic::CInputState::GetInstance()->GetPadState();
+	Eigen::Vector3f playerPosition;
+	
+	void* middlematrixNode = (void*)((uint32_t)sonic + 0x30);
+	SharedPtrTypeless ChargePart;
+	WRITE_MEMORY(0x1230A85, uint32_t, 0x15F84F4); // squat begin animation
+	WRITE_MEMORY(0x1230A9F, uint32_t, 0x15F84F4); // squat middle animation
+	WRITE_MEMORY(0x1230D74, uint32_t, 0x15F84F4); // squat end animation
+	Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ef_ch_sng_yh1_boost1", 1);
+	sonic->PlaySound(2002042, true);
+	return originalSonic_ChargeStart(This);
+	
+
+	
+	}
+		
+
+HOOK(void, __fastcall, Sonic_ChargeNext, 0x1230B60, hh::fnd::CStateMachineBase::CStateBase* This) {
+	auto sonic = (Sonic::Player::CPlayerSpeedContext*)This->m_pContext;
+	void* middlematrixNode = (void*)((uint32_t)sonic + 0x30);
+	SharedPtrTypeless ChargePart;
+	//printf("In ChargeNext State");
+	auto player = sonic->m_pPlayer;
+	//Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ef_ch_sng_yh1_boost1", 1);
+	sonic->PlaySound(2002042, false);
+	return originalSonic_ChargeNext(This);
+	
+	
+}
+
+
+HOOK(void, __fastcall, Sonic_ChargeEnd, 0x12309A0, hh::fnd::CStateMachineBase::CStateBase* This) {
+	//WRITE_MEMORY(0x1230C3A, uint32_t, 0x15F5108);
+	printf("In ChargeEnd State");
+	return originalSonic_ChargeEnd(This);
+	
+
 }
 
 
@@ -102,11 +157,13 @@ void Player::Install()
 
 {
 	CreateConsole();
-    printf("Spindash for Modren Sonic");  
+    printf("Spindash for Modern Sonic");  
 	INSTALL_HOOK(CPlayerSpeedUpdateParallel);
+	INSTALL_HOOK(Sonic_ChargeStart);
+	INSTALL_HOOK(Sonic_ChargeNext);
+	INSTALL_HOOK(Sonic_ChargeEnd);
 	INSTALL_HOOK(Sonic_SlideStarts);
-    
+	
    
 
-}
 

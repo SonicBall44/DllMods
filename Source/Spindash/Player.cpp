@@ -56,12 +56,12 @@ HOOK(void, __fastcall, Sonic_SlideStarts, 0x11D7110, hh::fnd::CStateMachineBase:
 	auto sonic = (Sonic::Player::CPlayerSpeedContext*)This->m_pContext;
 	void* middlematrixNode = (void*)((uint32_t)sonic + 0x30);
 	auto player = sonic->m_pPlayer;
-	
+	sonic->PlaySound(2002033, false);
 	Hedgehog::Math::CQuaternion rot = sonic->m_spMatrixNode->m_Transform.m_Rotation;
 	Eigen::Vector3f playerPosition;
 	Eigen::Quaternionf playerRotation = rot;
 	Eigen::Vector3f playerDir = playerRotation * Eigen::Vector3f::UnitZ();
-	Eigen::Vector3f spinVel = playerDir * cSonic_spindashSpeed;
+	Eigen::Vector3f spinVel = playerDir * Player::cSonic_spindashSpeed;
 	SharedPtrTypeless ChargePart;
 	
 	Hedgehog::Base::CSharedString Ch[] = {"Squat"};
@@ -106,14 +106,13 @@ HOOK(void, __fastcall, Sonic_ChargeStart, 0x1230A30, hh::fnd::CStateMachineBase:
 	auto player = sonic->m_pPlayer;
 	auto input = Sonic::CInputState::GetInstance()->GetPadState();
 	Eigen::Vector3f playerPosition;
-	
+	sonic->PlaySound(2002033, true);
 	void* middlematrixNode = (void*)((uint32_t)sonic + 0x30);
 	SharedPtrTypeless ChargePart;
 	WRITE_MEMORY(0x1230A85, uint32_t, 0x15F84F4); // squat begin animation
 	WRITE_MEMORY(0x1230A9F, uint32_t, 0x15F84F4); // squat middle animation
 	WRITE_MEMORY(0x1230D74, uint32_t, 0x15F84F4); // squat end animation
 	Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ef_ch_sng_yh1_boost1", 1);
-	sonic->PlaySound(2002042, true);
 	return originalSonic_ChargeStart(This);
 	
 
@@ -128,7 +127,7 @@ HOOK(void, __fastcall, Sonic_ChargeNext, 0x1230B60, hh::fnd::CStateMachineBase::
 	//printf("In ChargeNext State");
 	auto player = sonic->m_pPlayer;
 	//Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ef_ch_sng_yh1_boost1", 1);
-	sonic->PlaySound(2002042, false);
+	sonic->PlaySound(2002033, false);
 	return originalSonic_ChargeNext(This);
 	
 	

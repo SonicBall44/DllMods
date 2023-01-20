@@ -1,17 +1,9 @@
 #include "Player.h"
 #include <iostream>
-bool SpinDash = false;
-bool Rolling = false;
+
 float RollingTime = 0.0f;
-float SlidingSpeed = 0.0f;
-float SlidingTime = 0.0f;
-bool Sliding = false;
-bool Ducking = false;
-float const cSonic_spindashSpeed = 110.0f;
-float const cSonic_slidingSpeedMin = 10.0f;
-float const cSonic_slidingSpeedMax = 70.0f;
-float const cSonic_spindashTime = 3.0f;
-float const cSonic_slidingTime = 3.0f;
+int Player::cSonic_spindashSpeed = 110;
+
 
 
 

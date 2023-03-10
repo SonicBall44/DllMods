@@ -112,7 +112,7 @@ HOOK(void, __fastcall, Sonic_ChargeStart, 0x1230A30, hh::fnd::CStateMachineBase:
 	WRITE_MEMORY(0x1230A85, uint32_t, 0x15F84F4); // squat begin animation
 	WRITE_MEMORY(0x1230A9F, uint32_t, 0x15F84F4); // squat middle animation
 	WRITE_MEMORY(0x1230D74, uint32_t, 0x15F84F4); // squat end animation
-	Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ef_ch_sng_yh1_boost1", 1);
+	Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ch_sng_yh1_spinball1", 1);
 	return originalSonic_ChargeStart(This);
 	
 
@@ -126,7 +126,8 @@ HOOK(void, __fastcall, Sonic_ChargeNext, 0x1230B60, hh::fnd::CStateMachineBase::
 	SharedPtrTypeless ChargePart;
 	//printf("In ChargeNext State");
 	auto player = sonic->m_pPlayer;
-	//Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ef_ch_sng_yh1_boost1", 1);
+	sonic->ChangeAnimation("JumpBall");
+	//Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ch_sng_yh1_spinball1", 1);
 	sonic->PlaySound(2002033, false);
 	return originalSonic_ChargeNext(This);
 	

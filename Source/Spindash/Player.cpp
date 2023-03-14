@@ -86,7 +86,6 @@ HOOK(void, __fastcall, Sonic_SlideStarts, 0x11D7110, hh::fnd::CStateMachineBase:
 
 		sonic->m_Velocity = spinVel;
 		//sonic->m_Velocity.z() = cSonic_slidingSpeedZ;
-		WRITE_MEMORY(0x11D722C, int, -1); // Removes sliding sfx
 		//sonic->m_HorizontalVelocity.x() = cSonic_spindashSpeed;
 		
 		//sonic->m_Velocity.y() = cSonic_slidingSpeedMax;
@@ -109,10 +108,8 @@ HOOK(void, __fastcall, Sonic_ChargeStart, 0x1230A30, hh::fnd::CStateMachineBase:
 	sonic->PlaySound(2002033, true);
 	void* middlematrixNode = (void*)((uint32_t)sonic + 0x30);
 	SharedPtrTypeless ChargePart;
-	WRITE_MEMORY(0x1230A85, uint32_t, 0x15F84F4); // squat begin animation
-	WRITE_MEMORY(0x1230A9F, uint32_t, 0x15F84F4); // squat middle animation
-	WRITE_MEMORY(0x1230D74, uint32_t, 0x15F84F4); // squat end animation
-	Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ch_sng_yh1_spinball1", 1);
+	sonic->ChangeAnimation("JumpBall");
+	Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ef_ch_sng_yh1_sliding", 1);
 	return originalSonic_ChargeStart(This);
 	
 
@@ -126,7 +123,7 @@ HOOK(void, __fastcall, Sonic_ChargeNext, 0x1230B60, hh::fnd::CStateMachineBase::
 	SharedPtrTypeless ChargePart;
 	//printf("In ChargeNext State");
 	auto player = sonic->m_pPlayer;
-	sonic->ChangeAnimation("JumpBall");
+	//sonic->ChangeAnimation("JumpBall");
 	//Common::fCGlitterCreate(sonic, ChargePart, middlematrixNode, "ch_sng_yh1_spinball1", 1);
 	sonic->PlaySound(2002033, false);
 	return originalSonic_ChargeNext(This);
@@ -148,7 +145,7 @@ HOOK(void, __fastcall, Sonic_ChargeEnd, 0x12309A0, hh::fnd::CStateMachineBase::C
 void Player::Install()
 
 {
-	CreateConsole();
+	//CreateConsole();
     printf("Spindash for Modern Sonic");  
 	INSTALL_HOOK(CPlayerSpeedUpdateParallel);
 	INSTALL_HOOK(Sonic_ChargeStart);
